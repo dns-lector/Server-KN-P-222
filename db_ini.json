@@ -1,0 +1,10 @@
+{
+    "host":       "localhost",
+    "port":       3308,
+    "user":       "user_222",
+    "password":   "pass_222",
+    "database":   "server_222",
+    "charset":    "utf8mb4",
+    "collation":  "utf8mb4_unicode_ci",
+    "use_unicode": true
+}
