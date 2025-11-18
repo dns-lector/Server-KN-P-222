@@ -1,0 +1,1 @@
+[Wed Nov 12 16:42:52.350540 2025] [cgi:error] [pid 34472:tid 2084] [client ::1:57436] malformed header from script 'index.py': Bad header: <h1>Hello</h1>

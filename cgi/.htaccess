@@ -1,0 +1,2 @@
+RewriteEngine on
+RewriteRule  .*  access_manager.py?am-token=16515318 [END,QSA]
