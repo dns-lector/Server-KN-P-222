@@ -48,7 +48,9 @@ if not path.endswith('/') and '.' in path :             # перевірка ч�
 # sys.stdin = codecs.getreader("utf-8")(sys.stdin.detach())
 sys.stdout = io.TextIOWrapper(                          # Змінюємо кодування за замовчанням (cp1251)
     sys.stdout.buffer, "utf-8")                         #  на utf-8
-      
+sys.stdin = io.TextIOWrapper( 
+    sys.stdin.buffer, "utf-8")       
+
 path_parts = path.split('/', 3)                         # маршрутизація: використаємо ідею як в ASP:
 controller = (path_parts[1]                             #   /Controller(Home)/Action(Index)/Id(None)
               if len(path_parts) > 1                    # [0] - завжди порожній,   

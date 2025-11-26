@@ -39,7 +39,8 @@ class HomeController :
         html = self._layout().replace(
             "*RenderBody*", f'''
             <h1>Інтерфейс спільного шлюзу (CGI)</h1>
-            <a href="/home/privacy">Політика конфіденційності</a>
+            <a href="/home/privacy">Політика конфіденційності</a><br/>
+            <a href="/usertest">Тестування API: User</a><br/>
             {envs}
             {qp}
             {hdrs}

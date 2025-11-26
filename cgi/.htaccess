@@ -1,2 +1,6 @@
+CGIPassAuth On   # To pass Authorization header to CGI scripts
+# OR (for old servers)
+# SetEnvIf Authorization (.*) HTTP_AUTHORIZATION=$1   # add env-variable from Authorization header
+
 RewriteEngine on
 RewriteRule  .*  access_manager.py?am-token=16515318 [END,QSA]
