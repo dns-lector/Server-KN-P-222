@@ -15,7 +15,8 @@ function initTokenTests() {
         })
         .then(r => {
             if(r.status == 200) {
-                r.json().then(j => {                    
+                r.json().then(j => {  
+                    console.log(j);                  
                     let [_, jwtPayload, __] = j.data.split('.');
                     res.innerHTML = `<i id="token">${j.data}</i><br/>` + 
                         objToHtml(JSON.parse(atob(jwtPayload)));
@@ -29,7 +30,7 @@ function initTokenTests() {
 }
 
 function initApiTests() {
-    const apiNames = ["user"];
+    const apiNames = ["user", "product"];
     const apiMethods = ["get", "post"];
     for(let apiName of apiNames) {
         for(let apiMethod of apiMethods) {
@@ -46,13 +47,15 @@ function apiButtonClick(e) {
     const resId = `api-${apiName}-${apiMethod}-result`;
     const res = document.getElementById(resId);
     if(res) {
+        let tokenElement = document.getElementById("token");
+        let auth = tokenElement ? `Bearer ${tokenElement.innerText}` : "Basic YWRtaW46YWRtaW4=";
         let conf = {
             method: apiMethod.toUpperCase(),
             headers: {  
                 // YWRtaW06YWRtaW4= admim:admin
                 // YWRtaW46YWRtaW0= admin:admim
                 // YWRtaW46YWRtaW4= admin:admin
-                "Authorization": "Basic YWRtaW46YWRtaW4=",
+                "Authorization": auth,
                 "Custom-Header": "custom-value"
             }
         };
@@ -83,6 +86,7 @@ function apiButtonClick(e) {
 }
 
 function objToHtml(j, level=0) {
+    if(typeof(j)=="string") return j.replace('<', '&lt;');
     let sp = "&emsp;".repeat(level);
     let html = "{<br/>";
     html += Object.keys(j).map(k => {
