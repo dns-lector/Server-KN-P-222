@@ -39,11 +39,11 @@ class DataAccessor:
                 'email': user['user_email'],
             }
             token_body = ( 
-                base64.b64encode(json.dumps(token_header).encode()).decode("ascii")
+                base64.urlsafe_b64encode(json.dumps(token_header).encode()).decode("ascii")
                 + '.' 
-                + base64.b64encode(json.dumps(token_payload, ensure_ascii=False, default=str).encode()).decode("ascii")
+                + base64.urlsafe_b64encode(json.dumps(token_payload, ensure_ascii=False, default=str).encode()).decode("ascii")
             )
-            token_signature = base64.b64encode( 
+            token_signature = base64.urlsafe_b64encode( 
                 hmac.new(
                     b"secret",
                     token_body.encode(),

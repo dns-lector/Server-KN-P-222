@@ -1,24 +1,21 @@
 import json, sys
 from controllers.controller_rest import RestController, RestStatus
+from data.helper import * 
 
 class ProductController(RestController) :
 
     def do_get(self) :
-        # Визначити чи є у запиті заголовок авторизації за схемою Bearer
-        auth_header = self.cgi_request.headers.get('Authorization', '')
-        has_bearer = auth_header.startswith('Bearer ')
-        bearer_token = auth_header[7:] if has_bearer else None
-        jwt_parts = dict( 
-            zip( 
-                ("header", "payload", "signature"), 
-                bearer_token.split('.') 
-            ) 
-        ) if has_bearer else None
+        try :
+            payload = authorize_request(self.cgi_request)
+        except ValueError as err :
+            validation_error = str(err)
+            payload = None
+        else :
+            validation_error = None
 
         test_data = {
-            "auth": "Bearer" if has_bearer else "No or not Bearer",
-            "method": self.cgi_request.method,
-            "token": jwt_parts
+            "payload": payload,
+            "error": validation_error
         }
         return test_data
     
