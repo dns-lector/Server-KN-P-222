@@ -22,36 +22,8 @@ class DataAccessor:
             cursor.execute( sql, (login,) )
             user = next(cursor, None)
         if user and user['ua_dk'] == helper.kdf(password, user['ua_salt']) :
-            # return user
-            # генеруємо токен:
-            # формуємо дані
-            token_header = {
-                "alg": "HS256",
-                "typ": "JWT"
-            }
-            now = datetime.datetime.now()
-            token_payload = {
-                'jti': uuid.uuid4(),
-                'sub': user['user_id'],
-                'iat': int(now.timestamp()),
-                'exp': int((now + datetime.timedelta(minutes=1)).timestamp()),
-                'name': user['user_name'],
-                'email': user['user_email'],
-            }
-            token_body = ( 
-                base64.urlsafe_b64encode(json.dumps(token_header).encode()).decode("ascii")
-                + '.' 
-                + base64.urlsafe_b64encode(json.dumps(token_payload, ensure_ascii=False, default=str).encode()).decode("ascii")
-            )
-            token_signature = base64.urlsafe_b64encode( 
-                hmac.new(
-                    b"secret",
-                    token_body.encode(),
-                    hashlib.sha256
-                ).digest()
-            ).decode("ascii")
+            return user            
             # sql = "INSERT INTO tokens(token_id, ua_id, token_issued_at, token_expired_at) VALUES(?,?,?,?) "
-            return token_body + '.' + token_signature
         return None
 
     

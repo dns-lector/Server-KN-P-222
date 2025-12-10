@@ -1,4 +1,4 @@
-import base64, hashlib, hmac, json, random, string
+import base64, datetime, hashlib, hmac, json, random, string, uuid
 
 from models.cgi_request import CgiRequest
 
@@ -51,6 +51,16 @@ def get_signature(data:bytes|str, key:bytes|None=None, alg:str="HS256", enc:str=
 def b64u_to_json(input:str) -> any :
     return json.loads( base64.urlsafe_b64decode(input).decode() )
 
+
+def json_to_b64u(input:any) -> str :
+    return base64.urlsafe_b64encode(
+        json.dumps(
+            input, 
+            ensure_ascii=False, 
+            default=lambda o: o.__json__() if hasattr(o, '__json__') else str
+        ).encode()
+    ).decode("ascii")
+   
 
 def validate_jwt(jwt:str) -> dict :
     '''
@@ -105,6 +115,79 @@ def authorize_request(req:CgiRequest) -> dict :
     if not auth_header.startswith(auth_scheme) :
         raise ValueError("Authorization scheme must be " + auth_scheme)
     return validate_jwt( auth_header[len(auth_scheme):] )
+
+
+def authenticate_request(req:CgiRequest) -> tuple :
+    auth_header = req.headers.get('Authorization', None)
+    if not auth_header :
+        raise ValueError("No 'Authorization' header in request")
+    auth_scheme = 'Basic '
+    if not auth_header.startswith(auth_scheme) :
+        raise ValueError("Authorization scheme must be " + auth_scheme)
+    credentials = base64.b64decode( auth_header[len(auth_scheme):] ).decode()
+    if not ':' in credentials :
+        raise ValueError("No separator ':' in credentials")
+    return credentials.split(':', 1)
+
+
+def compose_jwt(alg:str="HS256", typ:str="JWT", 
+                iss:str|None="auto",
+                sub:str|None=None,
+                aud:str|None=None,
+                exp:int|None=-1,
+                nbf:int|None=None,
+                iat:int|None=-1,
+                jti:str|None="auto",
+                claims:dict|None=None,
+                signature_key:bytes|None=None
+                ) -> str :
+    token_header = {
+        "alg": alg,
+        "typ": typ
+    }
+    token_payload = {k:v for k, v in claims.items()
+                     } if isinstance(claims, dict) else dict()
+    if iss == 'auto' :
+        token_payload['iss'] = "Server-KN-P-222"
+    elif iss != None :
+        token_payload['iss'] = iss
+
+    if iat == -1 :
+        token_payload['iat'] = int(datetime.datetime.now().timestamp())
+    elif iat != None :
+        token_payload['iat'] = iat
+
+    if exp == -1 :
+        if token_payload['iat'] != None :
+            dt = datetime.datetime.fromtimestamp(token_payload['iat'])
+            token_payload['exp'] = int( (dt + datetime.timedelta(minutes=1)).timestamp() )
+    elif exp != None :
+        token_payload['exp'] = exp
+
+    if sub != None :
+        token_payload['sub'] = sub
+    if aud != None :
+        token_payload['aud'] = aud
+    if nbf != None :
+        token_payload['nbf'] = nbf
+
+    if jti == 'auto' :
+        token_payload['jti'] = str(uuid.uuid4())
+    elif jti != None :
+        token_payload['jti'] = jti
+    #return json_to_b64u(token_payload) + '.' + json_to_b64u(token_payload)
+
+    if not typ in ("JWT", "JWS") :
+        raise NotImplementedError()
+    
+    token_body = ( 
+        json_to_b64u(token_header)
+        + '.' 
+        + json_to_b64u(token_payload)
+    )
+    return token_body + '.' + get_signature(token_body, alg=alg, key=signature_key)
+        
+
 
 
 def main() :

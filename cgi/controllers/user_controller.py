@@ -1,6 +1,7 @@
 from controllers.controller_rest import RestController, RestStatus
-import base64, json, sys
+import datetime, json, sys
 from data.accessor import DataAccessor
+import data.helper as helper
 
 
 class UserController(RestController) :
@@ -12,30 +13,26 @@ class UserController(RestController) :
 
     def do_get(self) :
         # перевіряємо автентифікацію
-        auth_header = self.cgi_request.headers.get('Authorization', None)
-        if auth_header :
-            scheme = 'Basic '
-            if not auth_header.startswith(scheme) :
-                self.rest_response.status = RestStatus.status401
-                return "Invalid 'Authorization' scheme"
-            else :
-                try : 
-                    credentials = base64.b64decode(auth_header[len(scheme):].encode()).decode("utf-8")
-                except Exception as err : 
-                    self.rest_response.status = RestStatus.status401
-                    return str(err)
-                
-                (login, password) = credentials.split(':')
-                data_accessor = DataAccessor()
-                user = data_accessor.authenticate(login, password)
-                if user is None :
-                    self.rest_response.status = RestStatus.status401
-                    return "Credentials rejected"
-                else :
-                    return user
-        else :
+        try :
+            (login, password) = helper.authenticate_request(self.cgi_request)
+        except ValueError as err :
             self.rest_response.status = RestStatus.status401
-            return "No 'Authorization' header in request"
+            return str(err)
+        data_accessor = DataAccessor()
+        user = data_accessor.authenticate(login, password)
+        if user is None :
+            self.rest_response.status = RestStatus.status401
+            return "Credentials rejected"
+        # генеруємо токен:
+        token = helper.compose_jwt(              # Д.З. Реалізувати метод helper.jwt_for_user(user)
+            sub=user['user_id'],                 # який візьме на себе формалізм роботи з утворення
+            claims={                             # JWT за об'єктом БД 'user'
+                'name': user['user_name'],       # Внести зміни до контролера, перевірити роботу
+                'email': user['user_email'],     # 
+            }                                    # 
+        )
+        # Якщо є потреба зареєструвати токен, то слід передати його до data_accessor
+        return token
         
 
     def do_post(self) :
