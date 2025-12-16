@@ -1,5 +1,5 @@
 from controllers.controller_rest import RestController, RestStatus
-import datetime, json, sys
+import datetime, json, sys, time
 from data.accessor import DataAccessor
 import data.helper as helper
 
@@ -30,6 +30,9 @@ class UserController(RestController) :
                 'name': user['user_name'],       # Внести зміни до контролера, перевірити роботу
                 'email': user['user_email'],     # 
             }                                    # 
+            ,iat=int(time.time() + 100500)
+            , exp=None, 
+            # nbf = int(time.time() + 100500)
         )
         # Якщо є потреба зареєструвати токен, то слід передати його до data_accessor
         return token
@@ -42,6 +45,10 @@ class UserController(RestController) :
             "headers": self.cgi_request.headers
         }
         return test_data
+    
+
+    def do_test(self):
+        return "test"
 
 
 '''

@@ -39,6 +39,21 @@ function initApiTests() {
             if(btn) btn.addEventListener('click', apiButtonClick);
         }
     }
+    for(let btn of document.querySelectorAll('[data-test]')) {
+        btn.addEventListener('click', apiTestClick);
+    }
+}
+
+function apiTestClick(e) {
+    let btn = e.target.closest('[data-test]');
+    if(!btn) throw "closest('[data-test]') not found";
+    let testAttr = btn.getAttribute('data-test');
+    let res = btn.closest("tr").querySelector('.test-result');
+    if(!res) throw ".test-result not found";
+    // res.innerHTML =  objToHtml(testAttr);
+    fetch("/user?test=" + testAttr, {
+        method: 'TEST',
+    }).then(r => r.json()).then(j => res.innerHTML =  objToHtml(j));
 }
 
 function apiButtonClick(e) {
@@ -102,8 +117,7 @@ function objToHtml(j, level=0) {
 }
 
 /*
-Д.З. Створити АРІ контролер для адреси /order (замовлення)
-Створити тестову сторінку для нього (посилання на сторінку додати до головної сторінки сайту)
-Реалізувати перевірку методів GET, POST, PUT, PATCH, DELETE
-Для методів POST, PUT, PATCH додати тіла, для інших - ні
+Д.З. Модифікувати АРІ контролер для адреси /order (замовлення)
+Додати авторизацію - перевірку наявності та валідності JWT
+у т.ч. його часові характеристики.
 */
