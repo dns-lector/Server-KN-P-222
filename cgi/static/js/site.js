@@ -51,9 +51,48 @@ function apiTestClick(e) {
     let res = btn.closest("tr").querySelector('.test-result');
     if(!res) throw ".test-result not found";
     // res.innerHTML =  objToHtml(testAttr);
+    
     fetch("/user?test=" + testAttr, {
         method: 'TEST',
-    }).then(r => r.json()).then(j => res.innerHTML =  objToHtml(j));
+    }).then(r => r.json()).then(j => {
+        res.innerHTML = `<p>token: ${j.data}</p>`;
+        fetch("/product", {
+             headers: {  
+                "Authorization": `Bearer ${j.data}`,
+            }
+        }).then(r => r.json()).then(j => {
+            switch(testAttr) {
+                case 'nbf': 
+                    report = {};
+                    let res = typeof j.meta.auth != 'undefined';
+                    let key = `<span class="test-res-${res}">у відповіді мають бути метадані з полем 'auth'</span>`;
+                    report[key] = res ? "++" : "--";
+
+                    res = typeof j.meta.auth.status != 'undefined' && j.meta.auth.data != 'undefined';
+                    key = `<span class="test-res-${res}">у полі 'auth' мають бути два полі: 'status' i 'data'</span>`;
+                    report[key] = res ? "++" : "--";
+                    // поле 'status' повинно дорівнювати false
+                    // поле 'data' повинно містити слово 'nbf'                    
+                    break;
+                    // TODO додати загальний статус тестування: чи пройдені всі тести
+
+                    /*
+                    Д.З. Реалізувати детальний звіт тестування сервісу перевірки токенів (авторизації)
+                    у режимі "ехр"
+                    - у відповіді мають бути метадані з полем 'auth'
+                    - у полі 'auth' мають бути два полі: 'status' i 'data
+                    - поле 'status' повинно дорівнювати false (зауважити, що порівння з false може пройти null, 0 тощо)
+                    - поле 'data' повинно містити слово 'exp', але не як частина іншого слова (на кшталт expert) 
+                    - у полі 'data' повинно розпізаватись число (кількість секунд)
+                    */
+
+                default: throw "testAttr not recognized: " + testAttr;
+            }
+            res.innerHTML += objToHtml(report);
+            res.innerHTML += "<hr/>";
+            res.innerHTML += objToHtml(j);
+        });
+    });
 }
 
 function apiButtonClick(e) {

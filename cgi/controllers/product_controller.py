@@ -1,5 +1,5 @@
 import json, sys, time
-from controllers.controller_rest import RestController, RestStatus
+from controllers.controller_rest import RestController, RestAuth
 from data.helper import * 
 
 class ProductController(RestController) :
@@ -31,13 +31,15 @@ class ProductController(RestController) :
         except ValueError as err :
             validation_error = str(err)
             payload = None
+            self.rest_response.meta.auth = RestAuth(False, validation_error)
         else :
             validation_error = None
+            self.rest_response.meta.auth = RestAuth(True, payload.get("sub"))
 
 
         test_data = {
-            "payload": payload,
-            "error": validation_error
+            "name": "Product",
+            "price": 100500
         }
         return test_data
     

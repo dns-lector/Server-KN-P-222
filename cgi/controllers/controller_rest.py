@@ -25,15 +25,33 @@ RestStatus.status404 = RestStatus(False, 404, "Not Found")
 RestStatus.status405 = RestStatus(False, 405, "Method Not Allowed")
 
 
+class RestAuth :
+    def __init__(self, 
+                 status:bool|None,
+                 data:str) :
+        self.status = status
+        self.data = data
+
+    def __json__(self):
+        return {
+            "status": self.status,
+            "data": self.data,
+        }
+        
+RestAuth.ignored = RestAuth(status=None, data="Ignored")
+
+        
 
 class RestMeta :
     def __init__(self, 
                  serviceName:str="Server-222 API. ",
                  cache:int=0,
-                 pagination:dict|None=None):
+                 pagination:dict|None=None,
+                 auth:RestAuth=RestAuth.ignored):
         self.serviceName = serviceName
         self.cache = cache
         self.pagination = pagination
+        self.auth = auth
 
     #def __str__(self):
     #    return json.dumps(self.__dict__, ensure_ascii=False, allow_nan=False)
@@ -43,6 +61,7 @@ class RestMeta :
             "serviceName": self.serviceName,
             "cache": self.cache,
             "pagination": self.pagination,
+            "auth": self.auth,
         }
 
 

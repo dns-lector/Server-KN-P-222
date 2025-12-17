@@ -30,8 +30,8 @@ class UserController(RestController) :
                 'name': user['user_name'],       # Внести зміни до контролера, перевірити роботу
                 'email': user['user_email'],     # 
             }                                    # 
-            ,iat=int(time.time() + 100500)
-            , exp=None, 
+            #,iat=int(time.time() + 100500)
+            #, exp=None, 
             # nbf = int(time.time() + 100500)
         )
         # Якщо є потреба зареєструвати токен, то слід передати його до data_accessor
@@ -48,7 +48,27 @@ class UserController(RestController) :
     
 
     def do_test(self):
-        return "test"
+        test = self.cgi_request.query.get("test")
+        if test == 'nbf' :
+            return helper.compose_jwt(           
+                sub='test-iser-id',              
+                claims={                          
+                    'name': 'test-iser-name',    
+                    'email': 'test-iser-id-email',  
+                },
+                nbf = int(time.time() + 100500)
+            )
+        elif test == 'exp' :
+            return helper.compose_jwt(           
+                sub='test-iser-id',              
+                claims={                          
+                    'name': 'test-iser-name',    
+                    'email': 'test-iser-id-email',  
+                },
+                exp = int(time.time() - 100)
+            )
+        return "Unrecognized"
+             
 
 
 '''
