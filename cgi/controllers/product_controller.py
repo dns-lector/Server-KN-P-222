@@ -31,10 +31,10 @@ class ProductController(RestController) :
         except ValueError as err :
             validation_error = str(err)
             payload = None
-            self.rest_response.meta.auth = RestAuth(False, validation_error)
+            self.rest_response.meta.auth = RestAuth(False, validation_error, 401)
         else :
             validation_error = None
-            self.rest_response.meta.auth = RestAuth(True, payload.get("sub"))
+            self.rest_response.meta.auth = RestAuth(True, payload.get("sub"), 200)
 
 
         test_data = {

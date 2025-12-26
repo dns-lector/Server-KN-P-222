@@ -28,17 +28,20 @@ RestStatus.status405 = RestStatus(False, 405, "Method Not Allowed")
 class RestAuth :
     def __init__(self, 
                  status:bool|None,
-                 data:str) :
+                 data:str,
+                 code:int|None) :
         self.status = status
         self.data = data
+        self.code = code
 
     def __json__(self):
         return {
             "status": self.status,
             "data": self.data,
+            "code": self.code,
         }
         
-RestAuth.ignored = RestAuth(status=None, data="Ignored")
+RestAuth.ignored = RestAuth(status=None, data="Ignored", code=None)
 
         
 

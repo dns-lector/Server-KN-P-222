@@ -1,7 +1,68 @@
 document.addEventListener('DOMContentLoaded', () => {
     initApiTests();
     initTokenTests();
+    for(let btn of document.querySelectorAll("[data-token]")) {
+        btn.addEventListener('click', selfTestClick);
+    }
+    const allTests = document.getElementById("all-self-tests");
+    if(allTests)allTests.addEventListener('click', allTestsClick)
 });
+
+function allTestsClick() {
+    for(let btn of document.querySelectorAll("[data-token]")) {
+        btn.click();
+    }
+}
+
+function selfTestClick(e) {
+    const token = e.target.closest("[data-token]").getAttribute("data-token");
+    const tr = e.target.closest("[data-selftest]");
+    const dtl = tr.querySelector("[data-details]");
+    const res = tr.querySelector("[data-result]");
+    fetch("/product", {
+        headers: {  
+            "Authorization": token,
+        }
+    }).then(r => {
+        return r.json();
+    }).then(j => {
+        let cls, expected, param, isPassed = true, cond;
+
+        param = "status-code";
+        expected = dtl.getAttribute(`data-${param}`);
+        cond = j.status.code == 200;
+        cls = `test-res-${cond}`;
+        dtl.innerHTML = `<span title="Expected value ${expected}" class="${cls}">Status.code: ${j.status.code}<span><br/>`;
+        isPassed &&= cond;
+
+        expected = dtl.getAttribute("data-status-phrase");        
+        cond = j.status.phrase == expected;
+        cls = `test-res-${cond}`;
+        dtl.innerHTML += `<span title="Expected value ${expected}" class="${cls}">Status.phrase: ${j.status.phrase}<span><br/>`;
+        isPassed &&= cond;
+
+        expected = dtl.getAttribute("data-auth-code");        
+        cond = j.meta.auth.code == expected;
+        cls = `test-res-${cond}`;
+        dtl.innerHTML += `<span title="Expected value ${expected}" class="${cls}">Auth.code: ${j.meta.auth.code}<span><br/>`;
+        isPassed &&= cond;
+
+        expected = dtl.getAttribute("data-auth-data");     
+        cond = j.meta.auth.data == expected;
+        cls = `test-res-${cond}`;
+        dtl.innerHTML += `<span title="Expected value ${expected}" class="${cls}">Auth.data: ${j.meta.auth.data}<span><br/>`;
+        isPassed &&= cond;
+
+        expected = dtl.getAttribute("data-auth-status");     
+        cond = j.meta.auth.status.toString() == expected;
+        cls = `test-res-${cond}`;
+        dtl.innerHTML += `<span title="Expected value ${expected}" class="${cls}">Auth.status: ${j.meta.auth.status}<span><br/>`;
+        isPassed &&= cond;
+
+        res.innerHTML = `<span class="test-res-${isPassed}">${isPassed ? "OK" : "Fail"}<span>`;
+    });
+    
+}
 
 function initTokenTests() {
     let btn = document.getElementById("api-user-token-button");
@@ -156,7 +217,8 @@ function objToHtml(j, level=0) {
 }
 
 /*
-Д.З. Модифікувати АРІ контролер для адреси /order (замовлення)
-Додати авторизацію - перевірку наявності та валідності JWT
-у т.ч. його часові характеристики.
+Д.З. Додати до сторінки перевірки АРІ авторизації
+зведений звіт про виконання усіх тестів, що запускались.
+! Врахувати, що тести виконуються асинхронно і необхідно
+  дочекатись завершення останнього з них
 */

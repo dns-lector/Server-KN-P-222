@@ -26,6 +26,48 @@
             <td><button data-test="exp">TEST exp</button></td>
             <td class="test-result"></td>
         </tr>
-
+    </tbody>
+</table>
+<hr/>
+<h1>Самотестування авторизації</h1>
+<button id="all-self-tests">Запустити всі тести</button>
+<table>
+    <thead>
+        <tr>
+            <th>Тест</th>
+            <th>Результат</th>
+            <th>Подробиці</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr data-selftest>
+            <td>
+                Контроль схеми авторизації
+                <button data-token="Basic 123"><i>Пуск</i></button>
+            </td>
+            <td data-result></td>
+            <td data-details 
+                data-status-code="200"
+                data-status-phrase="OK"
+                data-auth-code="401"
+                data-auth-data="Authorization scheme must be Bearer"
+                data-auth-status="false"
+                ></td>
+        </tr>
+        
+        <tr data-selftest>
+            <td>
+                Контроль успішної авторизації
+                <button data-token="Bearer eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJuYW1lIjogIkRlZmF1bHQgQWRtaW5pc3RyYXRvciIsICJlbWFpbCI6ICJhZG1pbkBsb2NhbGhvc3QiLCAiaXNzIjogIlNlcnZlci1LTi1QLTIyMiIsICJpYXQiOiAxNzY2NzUxOTg0LCAiZXhwIjogMjM3MTU1MTk4NCwgInN1YiI6ICI2OTIzMWM1NS05ODUxLTExZjAtYjFiNy02MjUxNzYwMDU5NmMiLCAianRpIjogImZhYjdhNjE0LTAwOWYtNDUwZC1iYjcxLTBlNjg3MTI5Nzc5OSJ9.vPxb1hX2NiOi4Z6MTnUvSvVdWsFrR4QsncGcjZ-EowU="><i>Пуск</i></button>
+            </td>
+            <td data-result></td>
+            <td data-details 
+                data-status-code="200"
+                data-status-phrase="OK"
+                data-auth-code="200"
+                data-auth-data="69231c55-9851-11f0-b1b7-62517600596c"
+                data-auth-status="true"
+                ></td>
+        </tr>
     </tbody>
 </table>
