@@ -1,65 +1,131 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
+import socket, sys, importlib
 from urllib.parse import unquote_plus
 
-class MainHandler(BaseHTTPRequestHandler) :
-    def do_GET(self) :
-        # print("Hello, world!") -- потрапляє у консоль, не у відповідь сервера
-        # self.path - містить повний шлях, у т.ч. параметри
-        parts = self.path.split('?', 1)
+
+white_mime = {
+    ".html": "text/html",
+    ".htm": "text/html",
+    ".css": "text/css",
+    ".js": "application/javascript; charset=utf-8",
+    ".json": "application/json; charset=utf-8",
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".gif": "image/gif",
+    ".svg": "image/svg+xml",
+    ".ico": "image/x-icon",
+    ".txt": "text/plain",
+    ".pdf": "application/pdf",
+    ".zip": "application/zip",  
+    ".rar": "application/x-rar-compressed",
+    ".mp3": "audio/mpeg",
+    ".mp4": "video/mp4",
+    ".avi": "video/x-msvideo",
+    ".mpeg": "video/mpeg",
+    ".webm": "video/webm",
+    ".ogg": "audio/ogg",
+    ".wav": "audio/wav",
+    ".flac": "audio/flac",
+    ".woff": "font/woff",
+    ".woff2": "font/woff2",
+}
+
+
+class AccessManagerRequestHandler(BaseHTTPRequestHandler):
+    def handle_one_request(self):
+        try:
+            self.raw_requestline = self.rfile.readline(65537)
+            if len(self.raw_requestline) > 65536:
+                self.requestline = ''
+                self.request_version = ''
+                self.command = ''
+                self.send_error(414)
+                return
+            if not self.raw_requestline:
+                self.close_connection = 1
+                return
+            if not self.parse_request():
+                return
+            mname = 'access_manager'
+            if not hasattr(self, mname):
+                self.send_error(501, "Method not implemented: (%r)" % mname)
+                return
+            method = getattr(self, mname)
+            method()
+            self.wfile.flush()
+        except socket.timeout as e:
+            self.log_error("Request timed out: %r", e)
+            self.close_connection = 1
+            return
+        
+    
+    def access_manager(self):
+        mname = 'do_' + self.command
+        if not hasattr(self, mname):
+            self.send_error(501, "Unsupported method (%r)" % self.command)
+            return
+        method = getattr(self, mname)
+        method()
+ 
+
+
+class MainHandler(AccessManagerRequestHandler) :
+    def access_manager(self):
+        # Логіка віддачі статичних файлів 
+        if not self.path.endswith("/") and not "../" in self.path:
+            try:            
+                dot_index = self.path.rindex(".")
+                ext = self.path[dot_index:].lower()
+                mime_type = white_mime[ext]
+                fname = "./http/assets" + self.path
+                with open(fname, "rb") as file:
+                    print(fname, mime_type)
+                    self.send_response(200, "OK")
+                    self.send_header("Content-Type", mime_type)
+                    self.end_headers()
+                    self.wfile.write(file.read()) 
+                return    
+            except Exception as err:
+                print(err)
+
+        # Відокремлення параметрів запиту        
+        parts = self.path.split('?', 1)  # TODO: відокремити параметри ДО того, як шукати файл
         path = parts[0]
-        query_string = parts[1] if len(parts) > 1 else None
-        # Встановлюємо принцип маршрутизації:
-        # /Controller/Action/Id, якщо є ще "/", то вони стають частиною Id
-        # наприклад
-        # /Shop/Product/ASUS/412 -> Controller-Shop, Action-Product, Id-ASUS/412
-        # варіації з локалізацією /uk/Shop/Product/ASUS/412
-        parts = path.split('/', 3)
-        controller = parts[1].lower() if len(parts) > 1 and len(parts[1]) > 0 else "home"
-        action = parts[2].lower() if len(parts) > 2 and len(parts[2]) > 0  else "index"
-        id = parts[3] if len(parts) > 3 and len(parts[3]) > 0  else None
-
-        # Маршрутизація за АРІ
-        # /Product/ASUS/412
-        # Product - API endpoint (~ProductServlet), сервіс
-        # ASUS/412 - path param (~ServletPath)
-        # варіації з локалізацією /Product/ASUS/412 (+header Accept-Language: uk)
-
-        # /Product/ASUS/412   -- service = Product, service_param = ASUS/412
-        parts = path.split('/', 2)
-        service = parts[1].lower() if len(parts) > 1 and len(parts[1]) > 0 else "home"
-        service_param = parts[2] if len(parts) > 2 and len(parts[2]) > 0  else None        
-
+        self.query_string = parts[1] if len(parts) > 1 else None
         query_params = {}
-        if query_string != None:
+        if self.query_string != None:
             for key, value in (map(lambda x : None if x is None else unquote_plus(x) , 
                                    item.split('=', 1) if '=' in item else [item, None] )
-                for item in query_string.split('&') if len(item) > 0) :
+                for item in self.query_string.split('&') if len(item) > 0) :
                     query_params[key] = value if not key in query_params else [
                         *(  query_params[key] if isinstance(query_params[key], (list,tuple)) 
                             else [query_params[key]] ), 
                         value
                     ]
+        self.query_params = query_params
 
-        self.send_response(200, "OK")
-        self.send_header("Content-Type", "text/html; charset=utf-8")
-        self.end_headers()
-        self.wfile.write(f"""
-        <h1>HTTP</h1>
-        self.path = <b>{self.path}</b><br/>
-        path = <b>{path}</b><br/>
-        <hr/>
-        controller = <b>{controller}</b><br/>
-        action = <b>{action}</b><br/>
-        id = <b>{id}</b><br/>
-        <hr/>
-        API style:<br/>
-        service = <b>{service}</b><br/>
-        service_param = <b>{service_param}</b><br/>
+        # API - маршрутизація за контролерами        
+        parts = path.split('/', 2)
+        self.service = parts[1].lower() if len(parts) > 1 and len(parts[1]) > 0 else "home"
+        self.service_param = parts[2] if len(parts) > 2 and len(parts[2]) > 0  else None
+        # TODO: Врахувати перевірки на те, що точно не може бути іменем контролера ('./http/assets/.well-known/appspecific/com.chrome.devtools.json')
+        sys.path.append("./") 
+        try :    
+            controller_module = importlib.import_module("controllers.%s_controller" % (self.service,))                                                  
+            controller_class = getattr(controller_module, self.service.capitalize() + "Controller")    
+            controller_object = controller_class(self)
+            mname = 'do_' + self.command
+            if not hasattr(controller_object, mname):
+                self.send_error(405, "Unsupported method (%r) for controller (%r)" % (self.command, self.service))
+                return
+            method = getattr(controller_object, mname)
+            method()            
+        except Exception as err :
+            print(err)
+            self.send_error(404, "Not Found")
+        
 
-        <hr/>
-        query_string = <b>{query_string}</b><br/><br/>
-        query_params = <b>{query_params}</b><br/>
-        """.encode())
 
 
 

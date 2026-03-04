@@ -53,12 +53,18 @@ Client ------- [Proxy Apache]----------[Server Tomcat]
 
 З урахуванням висновків формуємо зразок шаблону відповіді
 {
+    status: {           // НТТР статус, як і заголовки, можуть спотворюватись серверами,
+                        // тому бажано вживати внутрішні статуси 
+        isOk: true,     // Причому подати статуси в різних типізаціях:
+        code: 200,      // від булевого - загальної усішності,
+        phrase: "OK"    // до рядкового з поясненням (особливо для помилок)
+    },
     meta: {
         service: "Back API service 'My shop': products",
         serviceUrl: "https://my-shop.ua/product",
-        stateUrl: "https://my-shop.ua/product?code=logi-123",
+        stateUrl: "https://my-shop.ua/product?code=logi-123&lang=de",
         method: "GET",
-        serverTime:  1234123575,
+        serverTime: 1234123575,
         cache: 86400,
         manipulation: {
             "create": "POST https://my-shop.ua/product",
@@ -84,7 +90,16 @@ Client ------- [Proxy Apache]----------[Server Tomcat]
                 fieldSubType: "float",
                 fieldDescription: "Product price in UAH"
             }
-        }
+        },
+        "variables": {   // важливо передавати ті значення, які "розібрав" бекенд
+            used: {                
+                "code": "logi-123",
+                "lang": "en"
+            },
+            ignored: {
+                "lang": "de"
+            }
+        },
     },
     data: {
         id: "123f1a-...",

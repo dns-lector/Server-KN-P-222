@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Py Http Home</title>
+    <link rel="icon" href="Python.png" />
+</head>
+<body>
+    <h1>HomeController::GET</h1>
+    <img src="Python.png" width=100 alt="logo" />  
+    <table>
+        <tr>
+            <th>Parameter</th>
+            <th>Value</th>
+        </tr>
+        <tr>
+            <td><b>Full Path</b></td>
+            <td>{self.handler.path}</td>
+        </tr>
+        <tr>
+            <td><b>Controller</b></td>
+            <td>HomeController</td>
+        </tr>
+        <tr>
+            <td><b>Query String</b></td>
+            <td>{self.handler.query_string}</td>
+        </tr>
+        <tr>
+            <td><b>Query Params</b></td>
+            <td>{self.handler.query_params}</td>
+        </tr>
+        <tr>
+            <td><b>Service</b></td>
+            <td>{self.handler.service}</td>
+        </tr>
+        <tr>
+            <td><b>Service Param</b></td>
+            <td>{self.handler.service_param}</td>
+        </tr>
+    </table>
+ 
+</body>
+</html>
