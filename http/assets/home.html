@@ -8,7 +8,13 @@
 </head>
 <body>
     <h1>HomeController::GET</h1>
-    <img src="Python.png" width=100 alt="logo" />  
+    <img src="Python.png?ver=1.1" width=100 alt="logo" /><br/>
+    <button onclick="sendUser('GET')">GET /user</button>
+    <button onclick="sendUser('POST')">POST /user</button>
+    <button onclick="sendUser('LINK')">LINK /user</button>
+    <p id="outText"></p>
+    <pre id="outJson"></pre>
+
     <table>
         <tr>
             <th>Parameter</th>
@@ -39,6 +45,17 @@
             <td>{self.handler.service_param}</td>
         </tr>
     </table>
- 
+    
+    <script>
+        function sendUser(method) {
+            fetch("/user", { method })
+            .then(r => {
+                r.text().then(t => {
+                    outText.innerText = t;
+                    outJson.innerText = JSON.stringify(JSON.parse(t), null, 4);
+                });
+            });
+        }
+    </script>
 </body>
 </html>

@@ -72,27 +72,29 @@ class AccessManagerRequestHandler(BaseHTTPRequestHandler):
 
 class MainHandler(AccessManagerRequestHandler) :
     def access_manager(self):
+         # Відокремлення параметрів запиту        
+        parts = self.path.split('?', 1)  # Done: відокремити параметри ДО того, як шукати файл
+        path = parts[0]
+        self.query_string = parts[1] if len(parts) > 1 else None
+
         # Логіка віддачі статичних файлів 
-        if not self.path.endswith("/") and not "../" in self.path:
+        if not path.endswith("/") and not "../" in path:
             try:            
-                dot_index = self.path.rindex(".")
-                ext = self.path[dot_index:].lower()
+                dot_index = path.rindex(".")
+                ext = path[dot_index:].lower()
                 mime_type = white_mime[ext]
-                fname = "./http/assets" + self.path
+                fname = "./http/assets" + path
                 with open(fname, "rb") as file:
                     print(fname, mime_type)
                     self.send_response(200, "OK")
                     self.send_header("Content-Type", mime_type)
                     self.end_headers()
                     self.wfile.write(file.read()) 
-                return    
+                return
             except Exception as err:
                 print(err)
 
-        # Відокремлення параметрів запиту        
-        parts = self.path.split('?', 1)  # TODO: відокремити параметри ДО того, як шукати файл
-        path = parts[0]
-        self.query_string = parts[1] if len(parts) > 1 else None
+       
         query_params = {}
         if self.query_string != None:
             for key, value in (map(lambda x : None if x is None else unquote_plus(x) , 
@@ -109,18 +111,28 @@ class MainHandler(AccessManagerRequestHandler) :
         parts = path.split('/', 2)
         self.service = parts[1].lower() if len(parts) > 1 and len(parts[1]) > 0 else "home"
         self.service_param = parts[2] if len(parts) > 2 and len(parts[2]) > 0  else None
-        # TODO: Врахувати перевірки на те, що точно не може бути іменем контролера ('./http/assets/.well-known/appspecific/com.chrome.devtools.json')
+
+        # Done: Врахувати перевірки на те, що точно не може бути іменем контролера ('./http/assets/.well-known/appspecific/com.chrome.devtools.json')
+        if '.' in self.service :
+            self.send_error(404, "Searching prevented for %s" % self.service)
+            return
+        
         sys.path.append("./") 
         try :    
             controller_module = importlib.import_module("controllers.%s_controller" % (self.service,))                                                  
             controller_class = getattr(controller_module, self.service.capitalize() + "Controller")    
             controller_object = controller_class(self)
-            mname = 'do_' + self.command
-            if not hasattr(controller_object, mname):
-                self.send_error(405, "Unsupported method (%r) for controller (%r)" % (self.command, self.service))
-                return
-            method = getattr(controller_object, mname)
-            method()            
+            mname = 'serve'
+            if hasattr(controller_object, mname):
+                method = getattr(controller_object, mname)
+                method()
+            else :
+                mname = 'do_' + self.command
+                if not hasattr(controller_object, mname):
+                    self.send_error(405, "Unsupported method (%r) for controller (%r)" % (self.command, self.service))
+                    return
+                method = getattr(controller_object, mname)
+                method()            
         except Exception as err :
             print(err)
             self.send_error(404, "Not Found")
