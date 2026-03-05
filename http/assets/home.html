@@ -12,6 +12,11 @@
     <button onclick="sendUser('GET')">GET /user</button>
     <button onclick="sendUser('POST')">POST /user</button>
     <button onclick="sendUser('LINK')">LINK /user</button>
+    <button onclick="sendUser('LINK', '')">LINK /home</button>
+    <button onclick="sendUser('GET', 'none')">GET /none</button>
+    <button onclick="sendUser('GET', 'wrong')">GET /wrong</button>
+    <button onclick="sendUser('GET', 'noserve')">GET /noserve</button>
+    <button onclick="sendUser('GET', 'except')">GET /except</button>
     <p id="outText"></p>
     <pre id="outJson"></pre>
 
@@ -47,8 +52,8 @@
     </table>
     
     <script>
-        function sendUser(method) {
-            fetch("/user", { method })
+        function sendUser(method, service="user") {
+            fetch(`/${service}`, { method })
             .then(r => {
                 r.text().then(t => {
                     outText.innerText = t;

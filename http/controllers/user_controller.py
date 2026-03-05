@@ -5,7 +5,14 @@ class UserController(ControllerRest) :
 
     def do_GET(self) :
         # Зводимо роботу методу до заповнення self.rest_response["data"]
-        self.rest_response["data"] = {"GET": "Вітання!"}
+        self.rest_response.data = {
+            "Full Path": self.handler.path,
+            "Controller": self.__class__.__name__,
+            "Query String": self.handler.query_string,
+            "Query Params": self.query_params,
+            "Service": self.handler.service,
+            "Service Param": self.handler.service_param
+        }
 
 
     def do_LINK(self) :

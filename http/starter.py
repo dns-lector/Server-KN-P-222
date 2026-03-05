@@ -1,6 +1,6 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
-import socket, sys, importlib
-from urllib.parse import unquote_plus
+from controllers.rest import RestError, RestResponse, RestStatus
+import socket, sys, importlib, json
 
 
 white_mime = {
@@ -78,7 +78,7 @@ class MainHandler(AccessManagerRequestHandler) :
         self.query_string = parts[1] if len(parts) > 1 else None
 
         # Логіка віддачі статичних файлів 
-        if not path.endswith("/") and not "../" in path:
+        if not path.endswith("/") and self.command == "GET" and not "../" in path :
             try:            
                 dot_index = path.rindex(".")
                 ext = path[dot_index:].lower()
@@ -91,52 +91,71 @@ class MainHandler(AccessManagerRequestHandler) :
                     self.end_headers()
                     self.wfile.write(file.read()) 
                 return
-            except Exception as err:
-                print(err)
-
-       
-        query_params = {}
-        if self.query_string != None:
-            for key, value in (map(lambda x : None if x is None else unquote_plus(x) , 
-                                   item.split('=', 1) if '=' in item else [item, None] )
-                for item in self.query_string.split('&') if len(item) > 0) :
-                    query_params[key] = value if not key in query_params else [
-                        *(  query_params[key] if isinstance(query_params[key], (list,tuple)) 
-                            else [query_params[key]] ), 
-                        value
-                    ]
-        self.query_params = query_params
+            except : pass
+            # except Exception as err:
+            #     print(err)
 
         # API - маршрутизація за контролерами        
         parts = path.split('/', 2)
         self.service = parts[1].lower() if len(parts) > 1 and len(parts[1]) > 0 else "home"
         self.service_param = parts[2] if len(parts) > 2 and len(parts[2]) > 0  else None
-
+        try:
+            self.execute_service()
+        except RestError as err :
+            self.send_rest_error(err)
+        
+        
+    def execute_service(self) :
         # Done: Врахувати перевірки на те, що точно не може бути іменем контролера ('./http/assets/.well-known/appspecific/com.chrome.devtools.json')
-        if '.' in self.service :
-            self.send_error(404, "Searching prevented for %s" % self.service)
-            return
+        if '.' in self.service or ' ' in self.service :
+            raise RestError(status=RestStatus.not_found_404,
+                data="Searching prevented for service '%s'" % (self.service,))
         
-        sys.path.append("./") 
+        sys.path.append("./")
         try :    
-            controller_module = importlib.import_module("controllers.%s_controller" % (self.service,))                                                  
+            controller_module = importlib.import_module("controllers.%s_controller" % (self.service,))                                                            
+        except :
+            raise RestError(status=RestStatus.not_found_404,
+                data = "Module not found for service '%s'" % (self.service,))
+
+        try :    
             controller_class = getattr(controller_module, self.service.capitalize() + "Controller")    
-            controller_object = controller_class(self)
-            mname = 'serve'
-            if hasattr(controller_object, mname):
-                method = getattr(controller_object, mname)
-                method()
-            else :
-                mname = 'do_' + self.command
-                if not hasattr(controller_object, mname):
-                    self.send_error(405, "Unsupported method (%r) for controller (%r)" % (self.command, self.service))
-                    return
-                method = getattr(controller_object, mname)
-                method()            
-        except Exception as err :
-            print(err)
-            self.send_error(404, "Not Found")
+        except :
+            raise RestError(status=RestStatus.internal_500,
+                data = "Controller not found for service '%s'" % (self.service,))
         
+        try :    # TODO: Розділити на дві частини
+            controller_object = controller_class(self)
+            method = getattr(controller_object, 'serve')
+        except :
+            raise RestError(status=RestStatus.internal_500,
+                data = "Serve not found for service '%s'" % (self.service,))
+        
+        try : method()
+        except Exception as err :
+            raise RestError(status=RestStatus.internal_500,
+                data = "Unexpected process termination '%s'" % (str(err),))
+        
+
+    def send_rest_error(self, err:RestError) :
+        self.send_rest( RestResponse(
+                status = err.status,
+                data = err.data
+            ))
+
+        
+
+    def send_rest(self, response:RestResponse) :
+        self.send_response(200, "OK")
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.end_headers()
+        self.wfile.write( 
+            json.dumps(
+                response,
+                ensure_ascii = False,
+                default = lambda obj: obj.__json__() if hasattr(obj, '__json__') else str
+            ).encode() 
+        )
 
 
 
