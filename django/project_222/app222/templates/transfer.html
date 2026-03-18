@@ -1,11 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transfer</title>
-</head>
-<body>
+{% extends 'layout.html' %}
+
+{% block title %}Transfer{% endblock %}
+
+{% block main_content %}
     <h1>Контекст та передача даних до шаблону</h1>
     <p>
         Контекст (контекст запиту) - оточення через яке передаються дані для 
@@ -22,5 +19,4 @@
             {{ key }}: {{ value }}<br>
         {% endfor %}
     </p>
-</body>
-</html>
+{% endblock %}
