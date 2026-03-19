@@ -4,18 +4,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="{% static '/css/site.css' %}" />
     <link rel="icon" href="{% static '/img/Python.png' %}" />
     <title>{% block title %}{% endblock %} App-222</title>
 </head>
 <body>
-    <header>header</header>
+    <header class="mb-2">
+        <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom shadow-sm">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="/">App-222</a>
+                <button class="navbar-toggler" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active"
+                            title="Контекст та передача даних до шаблону"
+                            href="/transfer/"><i class="bi bi-braces fs-4"></i></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active"
+                            title="Форми. Передача даних."
+                            href="/forms/"><i class="bi bi-card-list fs-4"></i></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" 
+                            title="Політика конфіденційності"
+                            href="#"><i class="bi bi-shield-check fs-4"></i></a>
+                    </li>                    
+                </ul>
+                <form class="d-flex" role="search">
+                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"/>
+                    <button class="btn btn-outline-success" type="submit">Search</button>
+                </form>
+                </div>
+            </div>
+        </nav>
+    </header>
 
-    {% block main_content %}
-        Default Content
-    {% endblock %}
+    <main class="container">
+        {% block main_content %}
+            Default Content
+        {% endblock %}
+    </main>
+    
 
-    <footer>footer</footer>
+    <footer class="bg-body-tertiary border-top p-3">
+        &copy; 2026, IT STEP University
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     <script src="{% static '/js/site.js' %}"></script>
 </body>
 </html>

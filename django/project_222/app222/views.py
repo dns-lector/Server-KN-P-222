@@ -10,6 +10,7 @@ def home(request) :
     template = loader.get_template('home.html')  # директорія templates визначається автоматично
     return HttpResponse(template.render())
 
+
 def transfer(request) :
     template = loader.get_template('transfer.html')
     context = {                                         # Контекст (у даному сенсі) - набір даних для 
@@ -19,8 +20,14 @@ def transfer(request) :
     context['all'] = context
     return HttpResponse(template.render(context, request))
 
+
+def forms(request) :
+    template = loader.get_template('forms.html')  
+    return HttpResponse(template.render())
+
 '''
-Д.З. Створити сторінку з інструкцією встановлення і налаштування 
-статичних файлів. Помістити на сторінку кілька ресурсів різного 
-типу: зображення, PDF-посилання, аудіо та/чи відеофайл
+Д.З. Реалізувати стилізацію футера шаблону сторінок
+- декоративна: додати тінь дзеркально-симетричну до заголовкової
+- інформативна: футер повинен містити уставну інформацію
+- навігаційна: необхідно забезпечити переходи на основні розділи сайту
 '''

@@ -3,11 +3,24 @@
 {% block title %}Home{% endblock %}
 
 {% block main_content %}
-    <h1>Знайомство з Django</h1>
-    <h2>Зміст</h2>
-    <h3>
-        <a href="/transfer/">Контекст та передача даних до шаблону</a>
-    </h3>
+    <h1 class="display-5">Знайомство з Django</h1>    
+    <div class="list-group">
+        <span class="list-group-item list-group-item-secondary fs-5">Зміст</span>
+        <a href="/transfer/" class="list-group-item list-group-item-action" >
+            <i class="bi bi-braces fs-6"></i> Контекст та передача даних до шаблону
+        </a>
+        <a href="/forms/" class="list-group-item list-group-item-action">
+            <i class="bi bi-card-list fs-6"></i> Форми. Передача даних.
+        </a>
+        <a href="#" class="list-group-item list-group-item-action">
+            A third link item
+        </a>
+        <a href="#" class="list-group-item list-group-item-action">
+            <i class="bi bi-shield-check fs-6"></i> Політика конфіденційності
+        </a>
+        
+    </div>
+   
 {% endblock %}
 
     
