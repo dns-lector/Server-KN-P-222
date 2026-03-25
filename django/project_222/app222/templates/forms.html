@@ -1,0 +1,77 @@
+{% extends 'layout.html' %}
+
+{% block title %}Validation{% endblock %}
+
+{% block main_content %}
+<h1>Форми. Стилізація. Валідація.</h1>
+<form method="post">
+    <div class="input-group mb-3">
+        <label 
+            class="input-group-text" 
+            for="{{ demo_form.name.id_for_label }}"
+            id="{{ demo_form.name.id_for_label }}-addon"><i class="bi bi-person-badge"></i></label>
+        <input 
+            type="text"
+            class="form-control {{ demo_form.name.errors|yesno:'is-invalid, , ' }}" 
+            id="{{ demo_form.name.id_for_label }}"
+            name="{{ demo_form.name.html_name }}"
+            value="{{ demo_form.name.value|default_if_none:'' }}"
+            placeholder="{{ demo_form.name.label }}" 
+            aria-label="{{ demo_form.name.label }}" 
+            aria-describedby="{{ demo_form.name.id_for_label }}-addon" />
+        <div 
+            class="invalid-feedback">{{ demo_form.name.errors.as_text }}
+        </div>    
+    </div>
+
+    <div class="input-group mb-3">
+        <label 
+            class="input-group-text" 
+            for="{{ demo_form.surname.id_for_label }}"
+            id="{{ demo_form.surname.id_for_label }}-addon"><i class="bi bi-person-vcard"></i></label>
+        <input 
+            type="text"
+            class="form-control {{ demo_form.surname.errors|yesno:'is-invalid, , ' }}" 
+            id="{{ demo_form.surname.id_for_label }}"
+            name="{{ demo_form.surname.html_name }}"
+            value="{{ demo_form.surname.value|default_if_none:'' }}"
+            placeholder="{{ demo_form.surname.label }}" 
+            aria-label="{{ demo_form.surname.label }}" 
+            aria-describedby="{{ demo_form.surname.id_for_label }}-addon" />
+        <div 
+            class="invalid-feedback">{{ demo_form.surname.errors.as_text }}
+        </div>    
+    </div>
+
+    <button class="btn btn-primary">Send</button>
+    {% csrf_token %}
+</form>
+<hr/>
+<p>Базові вигляди: не включають кнопки надсилання, а також тег форми. 
+    При використанні методу POST до форми необхідно додавати 
+    csrf_token - Cross Site Request Forgery token - захисний 
+    механізм від форм, що надсилаються з інших сайтів
+</p>
+<b>demo_form.as_p - на базі параграфів</b>
+<form method="post">
+{{ demo_form.as_p }}
+<button>Send</button>
+{% csrf_token %}
+</form>
+
+<b>demo_form.as_div - на базі блоків</b>
+{{ demo_form.as_div }}
+
+<b>demo_form.as_ul - на базі переліку</b>
+<ul>
+    {{ demo_form.as_ul }}
+</ul>
+
+
+<b>demo_form.as_table - на базі таблиці</b>
+<table>
+    {{ demo_form.as_table }}
+</table>
+
+
+{% endblock %}
