@@ -28,6 +28,13 @@ def forms(request) :
     }
     return HttpResponse(template.render(context, request))
 
+def models(request) :
+    template = loader.get_template('models.html') 
+    context = {
+        
+    }
+    return HttpResponse(template.render(context, request))
+
 '''
 Д.З. Реалізувати стилізацію футера шаблону сторінок
 - декоративна: додати тінь дзеркально-симетричну до заголовкової
